@@ -1,27 +1,70 @@
 # AgentCore の使用開始
 
 ## 前提条件
-- 開始する前に、`bedrock-agentcore-starter-toolkit` をインストールしてください: `pip install bedrock-agentcore-starter-toolkit`
 
-## 追加のステアリングファイルの取得
-AgentCore を使用する際は、メモリとゲートウェイ管理のための専用ステアリングファイルを取得する必要があります。
+### 🌍 重要：AWS リージョンの選択
 
-**メモリステアリングファイルを取得するには:**
+**AgentCore を使用開始する前に、使用する AWS リージョンを決定してください。**
+
+#### サポートされているリージョン
+- **us-east-1** (バージニア北部) - 最も多くの AWS サービスが利用可能
+- **us-west-2** (オレゴン) - 西海岸での低レイテンシ
+- **ap-northeast-1** (東京) - 日本国内での低レイテンシ
+- **eu-west-1** (アイルランド) - ヨーロッパでの低レイテンシ
+- その他のサポートされているリージョン
+
+#### リージョン選択の考慮事項
+1. **地理的な近さ**: 低レイテンシのため、最寄りのリージョンを選択
+2. **Bedrock モデルの可用性**: 使用したいモデルが利用可能なリージョン
+3. **コンプライアンス要件**: データの保存場所に関する規制要件
+4. **コスト**: リージョンによって料金が異なる場合があります
+
+#### リージョンの設定方法
+すべての AgentCore コマンドで `--region` パラメータを使用してください：
 ```bash
-# Kiroにメモリステアリングドキュメントを取得して.kiro/steering/に保存するよう依頼する
-"AgentCore Memory steering file を取得し、.kiro/steering/ に保存してください"
+# 例：東京リージョンを使用
+agentcore create --project-name MyAgent --region ap-northeast-1
+
+# 例：バージニア北部リージョンを使用
+agentcore create --project-name MyAgent --region us-east-1
 ```
 
-**ゲートウェイステアリングファイルを取得するには:**
+**このガイドでは例として `ap-northeast-1` (東京) を使用しますが、選択したリージョンに置き換えてください。**
+
+### 環境構築（推奨：uv を使用）
+
+**uv を使用した環境構築（推奨）：**
 ```bash
-# Kiroにゲートウェイステアリングドキュメントを取得して.kiro/steering/に保存するよう依頼する
-"AgentCore Gateway steering file を取得し、.kiro/steering/ に保存してください"
+# 新しいプロジェクトディレクトリを作成
+mkdir my-agentcore-project
+cd my-agentcore-project
+
+# uv プロジェクトを初期化
+uv init
+
+# bedrock-agentcore-starter-toolkit を追加
+uv add bedrock-agentcore-starter-toolkit
+
+# 以降のコマンドは uv run を使用して実行
+uv run agentcore --help
 ```
 
-これらのステアリングファイルは、以下の詳細なガイダンスを提供します。
-- メモリリソースの作成とCLIコマンド
-- ゲートウェイのデプロイと設定
-- ベストプラクティスとトラブルシューティング
+**従来の pip を使用する場合：**
+```bash
+# 仮想環境を作成してアクティベート
+python -m venv venv
+source venv/bin/activate  # macOS/Linux
+# venv\Scripts\activate   # Windows
+
+# パッケージをインストール
+pip install bedrock-agentcore-starter-toolkit
+```
+
+### uv の利点
+- **高速**: pip より大幅に高速なパッケージインストール
+- **自動管理**: 仮想環境の作成と管理を自動化
+- **現代的**: `pyproject.toml` ベースのプロジェクト管理
+- **依存関係解決**: より効率的な依存関係管理
 
 ## メモリ管理
 **重要:** ユーザーが「メモリ」について言及したり、AgentCore Memory について尋ねたりした場合は、常に `manage_agentcore_memory` MCP ツールを使用して、完全なドキュメントとCLIコマンドを取得してください。このツールは以下を提供します。
@@ -52,9 +95,17 @@ AgentCore を使用する際は、メモリとゲートウェイ管理のため�
 ### パス 1: 既存エージェントのデプロイ
 **すでにエージェントをお持ちの場合**、`agentcore create` は使用しないでください。代わりに:
 
-1. **MCPツールを使用してデプロイ要件を取得します:**
-   - `manage_agentcore_runtime` ツールを呼び出してコード要件を理解します。
-   - これにより、既存エージェントの完全なデプロイガイドが提供されます。
+1. **MCP ツールを使用してデプロイ要件を取得します：**
+   ```
+   kiroPowers({
+     "action": "use",
+     "powerName": "aws-agentcore",
+     "serverName": "agentcore-mcp-server",
+     "toolName": "manage_agentcore_runtime",
+     "arguments": {}
+   })
+   ```
+   これにより、既存エージェントの完全なデプロイガイドが提供されます。
 
 2. **既存エージェントの主要な要件:**
    - エージェントを `BedrockAgentCoreApp` でラップします。
@@ -69,12 +120,12 @@ AgentCore を使用する際は、メモリとゲートウェイ管理のため�
 ### パス 2: ゼロからの新規プロジェクト作成
 `agentcore create` を使用して、新しいエージェントプロジェクトのワークスペースを初期化します。
 
-**AIアシスタントにとって重要:** このコマンドをプログラムで実行する場合は、常に `--non-interactive` モードを使用してください。インタラクティブモードは、人間が手動でコマンドを実行する場合にのみ使用します。
+**AI アシスタントにとって重要：** このコマンドをプログラムで実行する場合は、常に `--non-interactive` モードを使用してください。インタラクティブモードは、人間が手動でコマンドを実行する場合にのみ使用します。
 
-**デフォルトの動作:** ユーザーが特定のオプション (テンプレート、エージェントフレームワーク、モデルプロバイダー) を指定しない場合、デフォルトを使用します。
-- テンプレート: `basic`
-- エージェントフレームワーク: `Strands`
-- モデルプロバイダー: `Bedrock`
+**デフォルトの動作：** ユーザーが特定のオプション（テンプレート、エージェントフレームワーク、モデルプロバイダー）を指定しない場合、デフォルトを使用します：
+- テンプレート：`basic`
+- エージェントフレームワーク：`Strands`
+- モデルプロバイダー：`Bedrock`
 
 つまり、`agentcore create --non-interactive --project-name <name>` を実行するだけで、すべてのデフォルトが使用されます。
 
@@ -93,30 +144,37 @@ agentcore create --non-interactive --project-name <name> --template <template> -
 - `--non-interactive`: 非対話モードで実行 (フラグが提供されると自動的に有効になります)
 - `--venv` / `--no-venv`: 仮想環境を自動的に作成し、依存関係をインストールします (デフォルト: true)
 
-**例:**
+**例：**
 ```bash
-# AIアシスタントの使用 (非対話型、デフォルトのbasicテンプレート)
-agentcore create --non-interactive --project-name MyAgent --template basic --agent-framework Strands --model-provider Bedrock
+# AI アシスタントの使用（非対話型、デフォルトの basic テンプレート、リージョン指定）
+agentcore create --non-interactive --project-name MyAgent --template basic --agent-framework Strands --model-provider Bedrock --region ap-northeast-1
 
-# カスタムエージェントフレームワークを使用
-agentcore create --non-interactive --project-name MyAgent --template basic --agent-framework ClaudeAgents --model-provider Bedrock
+# カスタムエージェントフレームワークを使用（リージョン指定）
+agentcore create --non-interactive --project-name MyAgent --template basic --agent-framework ClaudeAgents --model-provider Bedrock --region ap-northeast-1
 
-# IaCを含むproductionテンプレート
-agentcore create --non-interactive --project-name MyAgent --template production --agent-framework Strands --model-provider Bedrock --iac CDK
+# IaC を含む production テンプレート（リージョン指定）
+agentcore create --non-interactive --project-name MyAgent --template production --agent-framework Strands --model-provider Bedrock --iac CDK --region ap-northeast-1
 
-# 最小限のコマンド (すべてのデフォルトを使用: basicテンプレート、Strands、Bedrock)
-agentcore create --non-interactive --project-name MyAgent
+# 最小限のコマンド（すべてのデフォルトを使用、リージョン指定）
+agentcore create --non-interactive --project-name MyAgent --region ap-northeast-1
 
-# 人間ユーザーのインタラクティブモード (手動使用のみ)
+# 人間ユーザーのインタラクティブモード（手動使用のみ）
 agentcore create
 ```
 
-**作成されるもの:**
+**注意：** `ap-northeast-1` の部分は、選択したリージョンに置き換えてください。
+
+**作成されるもの：**
 - 選択した名前のプロジェクトディレクトリ
-- エージェントSDKのボイラープレートコード
-- 設定ファイル (.bedrock_agentcore.yaml)
-- 依存関係の設定 (pyproject.toml または requirements.txt)
-- 仮想環境 (--no-venv が指定されていない場合)
+- エージェント SDK のボイラープレートコード
+- 設定ファイル（.bedrock_agentcore.yaml）
+- 依存関係の設定（pyproject.toml または requirements.txt）
+- 仮想環境（--no-venv が指定されていない場合）
+
+**uv 環境での注意点：**
+- `agentcore create` で作成されたプロジェクトでも、`uv` を使用して依存関係を管理できます
+- 既存の `requirements.txt` がある場合は `uv add --requirements requirements.txt` で移行可能
+- `uv run` を使用してコマンドを実行することで、自動的に適切な環境で実行されます
 
 ---
 
@@ -126,6 +184,11 @@ agentcore create
 **コマンド:**
 ```bash
 cd <project-name>
+
+# uv 環境を使用している場合（推奨）
+uv run agentcore dev
+
+# 従来の環境または agentcore create で作成されたプロジェクト
 agentcore dev
 ```
 
@@ -142,17 +205,20 @@ agentcore dev
 
 **例:**
 ```bash
-# 基本的な使用法 (ポート8080または次に利用可能なポートを使用)
+# uv 環境での基本的な使用法（推奨）
+uv run agentcore dev
+
+# 従来環境での基本的な使用法
 agentcore dev
 
 # カスタムポートを使用
-agentcore dev --port 3000
+uv run agentcore dev --port 3000
 
 # 環境変数を使用
-agentcore dev --env API_KEY=abc123 --env DEBUG=true
+uv run agentcore dev --env API_KEY=abc123 --env DEBUG=true
 
 # 複数の環境変数
-agentcore dev --env KEY1=value1 --env KEY2=value2
+uv run agentcore dev --env KEY1=value1 --env KEY2=value2
 ```
 
 **サーバーの詳細:**
@@ -196,20 +262,23 @@ agentcore invoke --dev '{"prompt": "Hello"}'
 
 **例:**
 ```bash
-# JSONペイロード (デフォルトポート8080)
-agentcore invoke --dev '{"prompt": "AWSとは何ですか？"}'
+# uv 環境での JSON ペイロード（推奨）
+uv run agentcore invoke --dev '{"prompt": "AWS とは何ですか？"}'
 
-# プレーンテキスト (自動ラップ)
-agentcore invoke --dev 'こんにちは、お元気ですか？'
+# 従来環境での JSON ペイロード
+agentcore invoke --dev '{"prompt": "AWS とは何ですか？"}'
+
+# プレーンテキスト（自動ラップ）
+uv run agentcore invoke --dev 'こんにちは、お元気ですか？'
 
 # カスタムポート
-agentcore invoke --dev --port 3000 '{"prompt": "Hello"}'
+uv run agentcore invoke --dev --port 3000 '{"prompt": "Hello"}'
 
-# 複雑なJSON
-agentcore invoke --dev '{"prompt": "これを分析してください", "context": "追加データ"}'
+# 複雑な JSON
+uv run agentcore invoke --dev '{"prompt": "これを分析してください", "context": "追加データ"}'
 
-# 会話の継続性のためのセッションID
-agentcore invoke --dev --session-id abc123 '{"prompt": "会話を続けてください"}'
+# 会話の継続性のためのセッション ID
+uv run agentcore invoke --dev --session-id abc123 '{"prompt": "会話を続けてください"}'
 ```
 
 **期待される応答:**
@@ -254,11 +323,13 @@ http://localhost:8080 で開発サーバーが見つかりません
 ### トラブルシューティング
 
 **開発サーバーが起動しない:**
-- エントリポイントファイルが存在することを確認します (デフォルト: `src/main.py`)。
-- コードの構文エラーを確認します。
-- 依存関係がインストールされていることを確認します: `uv pip install -e .`
-- `.bedrock_agentcore.yaml` が存在し、有効なエントリポイントを持っていることを確認します。
-- 注: uvicornは `uv run uvicorn` を介して実行され、個別のインストールは不要です。
+- エントリポイントファイルが存在することを確認します（デフォルト：`src/main.py`）
+- コードの構文エラーを確認します
+- 依存関係がインストールされていることを確認します：
+  - uv 環境：`uv sync` または `uv add <package-name>`
+  - 従来環境：`pip install -e .`
+- `.bedrock_agentcore.yaml` が存在し、有効なエントリポイントを持っていることを確認します
+- 注：uvicorn は `uv run uvicorn` を介して実行され、個別のインストールは不要です
 
 **Invokeが失敗する:**
 - 開発サーバーが実行中であることを確認します。
@@ -273,24 +344,38 @@ http://localhost:8080 で開発サーバーが見つかりません
 
 ## AgentCore ランタイムへのデプロイ
 
-### 既存のエージェントの場合 (agentcore create で作成されていないもの)
-**重要:** `manage_agentcore_runtime` MCP ツールを使用して、完全なデプロイ要件を取得してください。
+### 既存のエージェントの場合（agentcore create で作成されていないもの）
+**重要：** `manage_agentcore_runtime` MCP ツールを使用して、完全なデプロイ要件を取得してください：
 
-簡単な要約:
-1. **エージェントコードを** BedrockAgentCoreApp パターンで**ラップします**。
-2. `requirements.txt` を更新して `bedrock-agentcore` を含めます。
-3. **設定:** `agentcore configure --entrypoint your_agent.py --non-interactive`
-4. **デプロイ:** `agentcore launch`
-5. **テスト:** `agentcore invoke '{"prompt": "Hello"}'`
+```
+kiroPowers({
+  "action": "use",
+  "powerName": "aws-agentcore",
+  "serverName": "agentcore-mcp-server",
+  "toolName": "manage_agentcore_runtime",
+  "arguments": {}
+})
+```
 
-### 新規プロジェクトの場合 (agentcore create で作成されたもの)
-ローカル開発が完了したら:
-1. **デプロイ用に設定:** `agentcore configure --entrypoint src/main.py`
-2. **クラウドにデプロイ:** `agentcore launch`
-3. **ステータスを確認:** `agentcore status`
-4. **クラウドで呼び出し:** `agentcore invoke '{"prompt": "Hello"}'`
-5. **セッションを停止:** `agentcore stop-session` (リソースを解放するため)
-6. **リソースを破棄:** `agentcore destroy` (完了したら、最初に `--dry-run` を使用してください)
+簡単な要約：
+1. **エージェントコードを** BedrockAgentCoreApp パターンで**ラップします**
+2. `requirements.txt` を更新して `bedrock-agentcore` を含めます
+3. **設定：** `agentcore configure --entrypoint your_agent.py --non-interactive --region ap-northeast-1`
+4. **デプロイ：** `agentcore launch --region ap-northeast-1`
+5. **テスト：** `agentcore invoke '{"prompt": "Hello"}' --region ap-northeast-1`
+
+**注意：** `ap-northeast-1` の部分は、選択したリージョンに置き換えてください。
+
+### 新規プロジェクトの場合（agentcore create で作成されたもの）
+ローカル開発が完了したら：
+1. **デプロイ用に設定：** `agentcore configure --entrypoint src/main.py --region ap-northeast-1`
+2. **クラウドにデプロイ：** `agentcore launch --region ap-northeast-1`
+3. **ステータスを確認：** `agentcore status --region ap-northeast-1`
+4. **クラウドで呼び出し：** `agentcore invoke '{"prompt": "Hello"}' --region ap-northeast-1`
+5. **セッションを停止：** `agentcore stop-session --region ap-northeast-1`（リソースを解放するため）
+6. **リソースを破棄：** `agentcore destroy --region ap-northeast-1`（完了したら、最初に `--dry-run` を使用してください）
+
+**注意：** `ap-northeast-1` の部分は、選択したリージョンに置き換えてください。
 
 ---
 
@@ -298,50 +383,63 @@ http://localhost:8080 で開発サーバーが見つかりません
 
 ### 既存のエージェントの場合
 ```bash
-# デプロイ要件を取得 (MCPツールを使用: manage_agentcore_runtime)
-# その後、設定してデプロイ:
-agentcore configure --entrypoint agent.py --non-interactive
-agentcore launch
-agentcore invoke '{"prompt": "Hello"}'
+# デプロイ要件を取得（MCP ツールを使用：manage_agentcore_runtime）
+# その後、設定してデプロイ：
+
+# uv 環境の場合（推奨）
+uv run agentcore configure --entrypoint agent.py --non-interactive --region ap-northeast-1
+uv run agentcore launch --region ap-northeast-1
+uv run agentcore invoke '{"prompt": "Hello"}' --region ap-northeast-1
+
+# 従来環境の場合
+agentcore configure --entrypoint agent.py --non-interactive --region ap-northeast-1
+agentcore launch --region ap-northeast-1
+agentcore invoke '{"prompt": "Hello"}' --region ap-northeast-1
 ```
 
 ### 新規プロジェクトの場合
 ```bash
-# 新規プロジェクトを作成 (AIアシスタントの場合は非対話型)
+# 新規プロジェクトを作成（AI アシスタントの場合は非対話型）
 agentcore create --non-interactive --project-name MyAgent --template basic --agent-framework Strands --model-provider Bedrock
 
-# 新規プロジェクトを作成 (人間ユーザーの場合は対話型)
+# 新規プロジェクトを作成（人間ユーザーの場合は対話型）
 agentcore create
 
 # プロジェクトに移動
 cd <project-name>
 
-# 開発サーバーを起動 (1つのターミナルで)
-agentcore dev
+# uv 環境に移行する場合（オプション）
+uv init --no-readme
+uv add --requirements requirements.txt
 
-# ローカルでテスト (別のターミナルで)
-agentcore invoke --dev '{"prompt": "test"}'
+# 開発サーバーを起動（1つのターミナルで）
+uv run agentcore dev  # uv 環境の場合
+# agentcore dev       # 従来環境の場合
 
-# デプロイ用に設定
-agentcore configure --entrypoint src/main.py
+# ローカルでテスト（別のターミナルで）
+uv run agentcore invoke --dev '{"prompt": "test"}'  # uv 環境の場合
+# agentcore invoke --dev '{"prompt": "test"}'       # 従来環境の場合
 
-# AWSにデプロイ
-agentcore launch
+# デプロイ用に設定（リージョン指定）
+uv run agentcore configure --entrypoint src/main.py --region ap-northeast-1
 
-# デプロイステータスを確認
-agentcore status
+# AWS にデプロイ（リージョン指定）
+uv run agentcore launch --region ap-northeast-1
 
-# デプロイされたエージェントを呼び出し
-agentcore invoke '{"prompt": "Hello"}'
+# デプロイステータスを確認（リージョン指定）
+uv run agentcore status --region ap-northeast-1
 
-# アクティブなセッションを停止
-agentcore stop-session
+# デプロイされたエージェントを呼び出し（リージョン指定）
+uv run agentcore invoke '{"prompt": "Hello"}' --region ap-northeast-1
 
-# 破棄されるものをプレビュー
-agentcore destroy --dry-run
+# アクティブなセッションを停止（リージョン指定）
+uv run agentcore stop-session --region ap-northeast-1
 
-# すべてのリソースを破棄
-agentcore destroy
+# 破棄されるものをプレビュー（リージョン指定）
+uv run agentcore destroy --dry-run --region ap-northeast-1
+
+# すべてのリソースを破棄（リージョン指定）
+uv run agentcore destroy --region ap-northeast-1
 
 # 開発サーバーを停止
 # 開発サーバーのターミナルで Ctrl+C を押します
