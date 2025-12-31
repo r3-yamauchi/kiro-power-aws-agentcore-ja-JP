@@ -21,9 +21,30 @@ MCPツール、ステアリングファイル、フックを一つのパッケ�
 
 - `POWER.md`: power の定義と利用可能な MCP ツールの概要
 - `mcp.json`: 必要に応じて利用する MCP Server の定義
+
+### ステアリングファイル
+
+#### 基本ガイド
 - `steering/getting-started.md`: 前提条件、`agentcore create` の使い方、ローカル開発・呼び出し・デプロイの流れ
-- `steering/agentcore-memory-integration.md`: Strands エージェントへのメモリ統合方法、CLI コマンド、ベストプラクティス
+- `steering/agentcore-fundamentals.md`: Bedrock AgentCore の基本概念、アーキテクチャ、主要機能の包括的説明
+
+#### Gateway 関連ガイド
 - `steering/agentcore-gateway-integration.md`: Gateway（MCP エンドポイント）で Lambda / OpenAPI / Smithy / MCP サーバーをツール化する手順
+- `steering/agentcore-lambda-mcp-guide.md`: Lambda 関数の MCP 化の詳細ガイド
+- `steering/agentcore-openapi-mcp-guide.md`: OpenAPI 仕様の MCP 変換の詳細ガイド
+- `steering/agentcore-semantic-search-guide.md`: セマンティック検索機能の活用ガイド
+
+#### デプロイメントガイド
+- `steering/strands-agentcore-deployment.md`: Strands Agent フレームワークを AgentCore Runtime にデプロイする完全ガイド
+- `steering/mcp-agentcore-deployment.md`: MCP サーバーを AgentCore Runtime にデプロイして MCP ツールをホストする完全ガイド
+
+#### 高度な機能ガイド
+- `steering/agentcore-streaming-responses.md`: ストリーミングレスポンスの実装と WebSocket 通信の詳細ガイド
+- `steering/agentcore-session-context-management.md`: セッション管理とランタイムコンテキストの活用ガイド
+- `steering/agentcore-multimodal-guide.md`: マルチモーダルペイロード（テキスト、画像、音声）処理の完全ガイド
+
+#### 統合ガイド
+- `steering/agentcore-memory-integration.md`: Memory リソースの Strands エージェントとの統合ガイド
 
 ## クイックスタート
 

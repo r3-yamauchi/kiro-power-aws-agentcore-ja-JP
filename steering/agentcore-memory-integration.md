@@ -10,11 +10,12 @@
 - デプロイ済み、またはデプロイ準備が整っている既存の Strands エージェント
 - `bedrock-agentcore-starter-toolkit` がインストールされていること
 - AWS 認証情報が設定されていること
+- **Strands Agents MCP サーバー**: Strands 関連のドキュメント検索に利用可能（`search_docs`、`fetch_doc` ツール）
 
 ## ステップ 1: 必要なパッケージのインストール
 
 ```bash
-pip install 'bedrock-agentcore[strands-agents]'
+uv add 'bedrock-agentcore[strands-agents]'
 ```
 
 `pyproject.toml` または `requirements.txt` に追加します。
@@ -30,13 +31,13 @@ bedrock-agentcore[strands-agents]
 
 ```bash
 # 基本メモリの作成 (STM のみ)
-agentcore memory create my_agent_memory \
+uv run agentcore memory create my_agent_memory \
     --description "My agent のメモリ" \
-    --region us-west-2 \
+    --region us-east-1 \
     --wait
 
 # LTM 戦略を使用した作成 (高度な設定)
-agentcore memory create my_agent_memory \
+uv run agentcore memory create my_agent_memory \
     --description "長期戦略を持つメモリ" \
     --strategies '[
         {
@@ -58,7 +59,7 @@ agentcore memory create my_agent_memory \
             }
         }
     ]' \
-    --region us-west-2 \
+    --region us-east-1 \
     --wait
 ```
 
@@ -67,7 +68,7 @@ agentcore memory create my_agent_memory \
 ```python
 from bedrock_agentcore.memory import MemoryClient
 
-client = MemoryClient(region_name="us-west-2")
+client = MemoryClient(region_name="us-east-1")
 
 # 基本メモリ
 basic_memory = client.create_memory(
@@ -113,7 +114,7 @@ def invoke(payload):
     
     session_manager = AgentCoreMemorySessionManager(
         agentcore_memory_config=agentcore_memory_config,
-        region_name="us-west-2"
+        region_name="us-east-1"
     )
     
     # メモリを持つエージェントの作成
@@ -141,7 +142,7 @@ if __name__ == "__main__":
 `.env` ファイルを作成します。
 ```bash
 AGENTCORE_MEMORY_ID=your-memory-id-here
-AWS_REGION=us-west-2
+AWS_REGION=us-east-1
 ```
 
 コードで次のように使用します。
@@ -174,7 +175,7 @@ agents:
 ## ステップ 6: エージェントのデプロイ
 
 ```bash
-agentcore launch
+uv run agentcore launch
 ```
 
 ## ステップ 7: メモリ機能のテスト
@@ -183,14 +184,14 @@ agentcore launch
 
 ```bash
 # 最初のメッセージ
-agentcore invoke '{
+uv run agentcore invoke '{
     "prompt": "My name is Alice and I like pizza",
     "session_id": "test_session_001",
     "actor_id": "alice"
 }'
 
 # 2 番目のメッセージ - エージェントは記憶しているはずです
-agentcore invoke '{
+uv run agentcore invoke '{
     "prompt": "What is my name and what do I like?",
     "session_id": "test_session_001",
     "actor_id": "alice"
@@ -201,22 +202,22 @@ agentcore invoke '{
 
 ### すべてのメモリを一覧表示
 ```bash
-agentcore memory list --region us-west-2
+uv run agentcore memory list --region us-east-1
 ```
 
 ### メモリの詳細を取得
 ```bash
-agentcore memory get your-memory-id --region us-west-2
+uv run agentcore memory get your-memory-id --region us-east-1
 ```
 
 ### メモリのステータスを確認
 ```bash
-agentcore memory status your-memory-id --region us-west-2
+uv run agentcore memory status your-memory-id --region us-east-1
 ```
 
 ### メモリの削除 (警告: 永続的です)
 ```bash
-agentcore memory delete your-memory-id --region us-west-2 --wait
+uv run agentcore memory delete your-memory-id --region us-east-1 --wait
 ```
 
 ## メモリ設定オプション
@@ -334,7 +335,7 @@ def invoke(payload):
     
     session_manager = AgentCoreMemorySessionManager(
         agentcore_memory_config=config,
-        region_name="us-west-2"
+        region_name="us-east-1"
     )
     
     # メモリとツールを持つエージェントの作成
@@ -363,6 +364,43 @@ if __name__ == "__main__":
 - [AgentCore メモリ ドキュメント](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/memory.html)
 - [Strands セッション管理](https://strandsagents.com/latest/documentation/docs/user-guide/concepts/agents/session-management/)
 - [メモリ名前空間ガイド](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/session-actor-namespace.html)
+
+### Strands Agents MCP サーバーの活用
+
+Strands Agent 開発時には、利用可能な `strands-agents` MCP サーバーを活用して Strands Agents SDK の包括的なドキュメントを検索できます。このサーバーは AI コーディングアシスタントと組み合わせて効率的な開発を支援します。
+
+```
+# メモリとセッション管理に関するドキュメントを検索
+kiroPowers({
+  "action": "use",
+  "powerName": "strands-agents",
+  "serverName": "strands-agents",
+  "toolName": "search_docs",
+  "arguments": {
+    "query": "memory session management strands"
+  }
+})
+```
+
+特定のドキュメントを取得する場合：
+
+```
+kiroPowers({
+  "action": "use", 
+  "powerName": "strands-agents",
+  "serverName": "strands-agents",
+  "toolName": "fetch_doc",
+  "arguments": {
+    "doc_id": "session-management"
+  }
+})
+```
+  "toolName": "fetch_doc",
+  "arguments": {
+    "doc_id": "session-management"
+  }
+})
+```
 
 ## クイックリファレンス
 

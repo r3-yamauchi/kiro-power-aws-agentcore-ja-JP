@@ -17,7 +17,7 @@ AgentCore は、複数のエージェント SDK (Strands、Claude、OpenAI) と�
 
 ## この機能を使用するタイミング
 
-- `agentcore create` を使用して新しいエージェントをゼロから構築する場合
+- `uv run agentcore create` を使用して新しいエージェントをゼロから構築する場合
 - エージェント開発を開始し、ワークフローに関するガイダンスが必要な場合
 - 既存のエージェントを AgentCore ランタイムにデプロイする場合
 - AgentCore プリミティブ (メモリ、ゲートウェイ) を既存のエージェントに統合する場合
@@ -30,19 +30,70 @@ AgentCore は、複数のエージェント SDK (Strands、Claude、OpenAI) と�
 
 ## 利用可能な MCP ツール
 
-この機能は agentcore-mcp-server を提供します。
+この機能は以下の MCP サーバーを提供します：
+
+### agentcore-mcp-server
 - `search_agentcore_docs` - AgentCore ドキュメントを検索
 - `fetch_agentcore_doc` - 特定のドキュメントページを取得
 - `manage_agentcore_runtime` - エージェントのランタイム構成を管理
 - `manage_agentcore_memory` - エージェントのメモリ操作を処理
 - `manage_agentcore_gateway` - エージェントのゲートウェイ設定を構成
 
+### strands-agents MCP Server
+- `search_docs` - Strands Agents SDK ドキュメントを検索
+- `fetch_doc` - 特定の Strands SDK ドキュメントを取得
+
+**Strands Agent 開発時の活用例:**
+```
+# Strands SDK のツール作成に関するドキュメントを検索
+kiroPowers({
+  "action": "use",
+  "powerName": "strands-agents",
+  "serverName": "strands-agents", 
+  "toolName": "search_docs",
+  "arguments": {
+    "query": "tool creation agent framework"
+  }
+})
+
+# MCP 統合に関する具体的なドキュメントを取得
+kiroPowers({
+  "action": "use",
+  "powerName": "strands-agents",
+  "serverName": "strands-agents",
+  "toolName": "fetch_doc", 
+  "arguments": {
+    "doc_id": "mcp-integration"
+  }
+})
+```
+
+このMCPサーバーは、Strands Agents SDK の包括的なドキュメントへのアクセスを提供し、AI コーディングアシスタントと組み合わせて効率的な Strands Agent 開発を支援します。
+
 ## 利用可能なステアリングファイル
 
 このパワーには以下のステアリングファイルが含まれています：
 
+### 基本ガイド
 - **getting-started** - 新規ユーザー向けの完全なセットアップガイド、プロジェクト作成、開発ワークフロー
-- **agentcore-gateway-integration** - Gateway リソースの Strands エージェントとの統合ガイド
+- **agentcore-fundamentals** - Bedrock AgentCore の基本概念、アーキテクチャ、主要機能の包括的説明
+
+### Gateway 関連ガイド
+- **agentcore-gateway-integration** - Gateway の基本概念から実践的な統合手順まで包括的なガイド
+- **agentcore-lambda-mcp-guide** - Lambda 関数の MCP 化の詳細ガイド
+- **agentcore-openapi-mcp-guide** - OpenAPI 仕様の MCP 変換の詳細ガイド
+- **agentcore-semantic-search-guide** - セマンティック検索機能の活用ガイド
+
+### デプロイメントガイド
+- **strands-agentcore-deployment** - Strands Agent フレームワークを AgentCore Runtime にデプロイする完全ガイド
+- **mcp-agentcore-deployment** - MCP サーバーを AgentCore Runtime にデプロイして MCP ツールをホストする完全ガイド
+
+### 高度な機能ガイド
+- **agentcore-streaming-responses** - ストリーミングレスポンスの実装と WebSocket 通信の詳細ガイド
+- **agentcore-session-context-management** - セッション管理とランタイムコンテキストの活用ガイド
+- **agentcore-multimodal-guide** - マルチモーダルペイロード（テキスト、画像、音声）処理の完全ガイド
+
+### 統合ガイド
 - **agentcore-memory-integration** - Memory リソースの Strands エージェントとの統合ガイド
 
 特定のワークフローについては、以下のようにステアリングファイルにアクセスしてください：
@@ -54,26 +105,103 @@ kiroPowers({
 })
 ```
 
+**「Bedrock AgentCore とは何か？」について詳しく知りたい場合：**
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-fundamentals.md"
+})
+```
+
+**AgentCore Gateway の基本を理解したい場合：**
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-gateway-integration.md"
+})
+```
+
+**Lambda 関数を MCP ツールにしたい場合：**
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-lambda-mcp-guide.md"
+})
+```
+
+**OpenAPI を MCP ツールにしたい場合：**
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-openapi-mcp-guide.md"
+})
+```
+
+**セマンティック検索を使いたい場合：**
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-semantic-search-guide.md"
+})
+```
+
+**Strands Agent SDK を使用して Agent を実装し、 AgentCore にデプロイしたい場合：**
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "strands-agentcore-deployment.md"
+})
+```
+
+**MCP サーバーを AgentCore にデプロイしたい場合：**
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "mcp-agentcore-deployment.md"
+})
+```
+
+**AgentCore のストリーミング機能を使いたい場合：**
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-streaming-responses.md"
+})
+```
+
+**AgentCore のセッション管理を使いたい場合：**
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-session-context-management.md"
+})
+```
+
+**AgentCore のマルチモーダル処理を使いたい場合：**
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-multimodal-guide.md"
+})
+```
+
 ## はじめに
 
 ### 🌍 重要：AWS リージョンの設定
 
-**AgentCore を使用する前に、使用する AWS リージョンを決定してください。**
+**推奨：特に理由がない限り `us-east-1` を使用してください。**
 
-AgentCore は以下のリージョンをサポートしています：
-- **us-east-1** (バージニア北部) - 最も多くの AWS サービスが利用可能
-- **us-west-2** (オレゴン) - 西海岸での低レイテンシ
-- **ap-northeast-1** (東京) - 日本国内での低レイテンシ
-- **eu-west-1** (アイルランド) - ヨーロッパでの低レイテンシ
-- その他のサポートされているリージョン
-
-**どのリージョンを使用しますか？**
-
-リージョン選択の考慮事項：
-- **地理的な近さ**: 低レイテンシのため、最寄りのリージョンを選択
-- **Bedrock モデルの可用性**: 使用したいモデルが利用可能なリージョン
-- **コンプライアンス要件**: データの保存場所に関する規制要件
-- **コスト**: リージョンによって料金が異なる場合があります
+AgentCore は複数のリージョンをサポートしています。詳細なリージョン選択については `getting-started.md` を参照してください。
 
 **リージョンを決定したら、すべての AgentCore コマンドで `--region` パラメータを使用してください。**
 
@@ -93,14 +221,48 @@ kiroPowers({
 
 ## 統合ガイド
 
+## 統合ガイド
+
 ### AgentCore Gateway
 - **基本的な Gateway 管理：** フレームワークに依存しない CLI コマンドについては `manage_agentcore_gateway` MCP ツールを使用してください
-- **Strands との完全統合：** Gateway を Strands エージェントと統合するには、以下のステアリングファイルを参照してください：
+- **Gateway の基本概念：** Gateway の基本的な理解については、以下のステアリングファイルを参照してください：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-gateway-basics.md"
+})
+```
+- **Gateway 統合の開始：** Gateway 統合の概要と専門ガイドへの導入については、以下のステアリングファイルを参照してください：
 ```
 kiroPowers({
   "action": "readSteering",
   "powerName": "aws-agentcore",
   "steeringFile": "agentcore-gateway-integration.md"
+})
+```
+- **Lambda MCP 化：** Lambda 関数を MCP ツールに変換するには、以下のステアリングファイルを参照してください：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-lambda-mcp-guide.md"
+})
+```
+- **OpenAPI MCP 変換：** OpenAPI 仕様を MCP ツールに変換するには、以下のステアリングファイルを参照してください：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-openapi-mcp-guide.md"
+})
+```
+- **セマンティック検索：** インテリジェントなツール選択を実装するには、以下のステアリングファイルを参照してください：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-semantic-search-guide.md"
 })
 ```
 
@@ -112,6 +274,55 @@ kiroPowers({
   "action": "readSteering",
   "powerName": "aws-agentcore",
   "steeringFile": "agentcore-memory-integration.md"
+})
+```
+
+### Strands Agent Framework
+- **基本的な Strands 開発：** Strands フレームワークの基本的な使用方法については公式ドキュメントを参照
+- **AgentCore への完全デプロイ：** Strands Agent を AgentCore Runtime にデプロイするには、以下のステアリングファイルを参照してください：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "strands-agentcore-deployment.md"
+})
+```
+
+### MCP Server Integration
+- **基本的な MCP 開発：** Model Context Protocol の基本的な使用方法については公式ドキュメントを参照
+- **AgentCore への完全デプロイ：** MCP サーバーを AgentCore Runtime にデプロイするには、以下のステアリングファイルを参照してください：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "mcp-agentcore-deployment.md"
+})
+```
+
+### Advanced AgentCore Features
+- **基本的な AgentCore 機能：** 標準的な AgentCore 機能については基礎知識ガイドを参照
+- **ストリーミングレスポンス：** リアルタイムストリーミング機能を実装するには、以下のステアリングファイルを参照してください：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-streaming-responses.md"
+})
+```
+- **セッション管理：** セッションとランタイムコンテキスト管理を実装するには、以下のステアリングファイルを参照してください：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-session-context-management.md"
+})
+```
+- **マルチモーダル処理：** テキスト、画像、音声などのマルチモーダルデータ処理を実装するには、以下のステアリングファイルを参照してください：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-multimodal-guide.md"
 })
 ```
 
@@ -185,83 +396,31 @@ kiroPowers({
 })
 ```
 
-## クイックスタートワークフロー
+## クイックスタート
 
-### 新規エージェントプロジェクト（uv 使用・推奨）
+詳細な手順については `getting-started.md` を参照してください。
+
+### 新規プロジェクト
 ```bash
-# 1. uv 環境でプロジェクトを作成
-mkdir MyAgent && cd MyAgent
-uv init
-uv add bedrock-agentcore-starter-toolkit
-
-# 2. AgentCore プロジェクトを作成（リージョンを指定）
-uv run agentcore create --non-interactive --project-name MyAgent --region ap-northeast-1
-
-# 3. 作成されたプロジェクトに移動
+# プロジェクト作成
+uv run agentcore create --non-interactive --project-name MyAgent --region us-east-1
 cd MyAgent
 
-# 4. 開発サーバーを起動
+# 開発・テスト
 uv run agentcore dev
-
-# 5. 別のターミナルでローカルテスト
 uv run agentcore invoke --dev '{"prompt": "Hello"}'
 
-# 6. デプロイ用に設定（リージョンを指定）
-uv run agentcore configure --entrypoint src/main.py --region ap-northeast-1
-
-# 7. AWS にデプロイ（リージョンを指定）
-uv run agentcore launch --region ap-northeast-1
-
-# 8. デプロイされたエージェントをテスト（リージョンを指定）
-uv run agentcore invoke '{"prompt": "Hello"}' --region ap-northeast-1
+# デプロイ
+uv run agentcore configure --entrypoint src/main.py --region us-east-1
+uv run agentcore launch --region us-east-1
 ```
 
-**注意：** `ap-northeast-1` の部分は、選択したリージョンに置き換えてください（例：`us-east-1`、`us-west-2`、`eu-west-1` など）
-
-### 新規エージェントプロジェクト（従来方式）
+### 既存エージェント
 ```bash
-# 1. 新しいプロジェクトを作成（リージョンを指定）
-agentcore create --non-interactive --project-name MyAgent --region ap-northeast-1
-
-# 2. プロジェクトディレクトリに移動
-cd MyAgent
-
-# 3. 開発サーバーを起動
-agentcore dev
-
-# 4. 別のターミナルでローカルテスト
-agentcore invoke --dev '{"prompt": "Hello"}'
-
-# 5. デプロイ用に設定（リージョンを指定）
-agentcore configure --entrypoint src/main.py --region ap-northeast-1
-
-# 6. AWS にデプロイ（リージョンを指定）
-agentcore launch --region ap-northeast-1
-
-# 7. デプロイされたエージェントをテスト（リージョンを指定）
-agentcore invoke '{"prompt": "Hello"}' --region ap-northeast-1
+# デプロイ要件を確認（MCP ツール使用推奨）
+uv run agentcore configure --entrypoint your_agent.py --region us-east-1
+uv run agentcore launch --region us-east-1
 ```
-
-**注意：** `ap-northeast-1` の部分は、選択したリージョンに置き換えてください（例：`us-east-1`、`us-west-2`、`eu-west-1` など）
-
-### 既存エージェントのデプロイ
-```bash
-# 1. uv 環境を構築（推奨）
-uv init
-uv add bedrock-agentcore-starter-toolkit
-
-# 2. デプロイ要件を確認（MCP ツールを使用）
-# manage_agentcore_runtime ツールを呼び出してガイダンスを取得
-
-# 3. エージェントを BedrockAgentCoreApp でラップ
-# 4. 依存関係に bedrock-agentcore を追加
-# 5. 設定とデプロイ（リージョンを指定）
-uv run agentcore configure --entrypoint your_agent.py --non-interactive --region ap-northeast-1
-uv run agentcore launch --region ap-northeast-1
-uv run agentcore invoke '{"prompt": "Hello"}' --region ap-northeast-1
-```
-
-**注意：** `ap-northeast-1` の部分は、選択したリージョンに置き換えてください（例：`us-east-1`、`us-west-2`、`eu-west-1` など）
 
 ## トラブルシューティング
 
@@ -330,39 +489,17 @@ uv run agentcore invoke '{"prompt": "Hello"}' --region ap-northeast-1
 ### 前提条件
 - AWS CLI がインストールされ、適切に設定されていること
 - Python 3.8+ がインストールされていること
-- `uv` がインストールされていること（推奨）または `pip`
+- `uv` がインストールされていること（インストール方法は `getting-started.md` を参照）
 
-### 環境構築（推奨：uv を使用）
+### 環境構築
 
-**uv を使用した仮想環境の作成：**
+詳細な環境構築手順については `getting-started.md` を参照してください。
+
+**基本的な手順:**
 ```bash
-# 新しいプロジェクトディレクトリを作成
-mkdir my-agentcore-project
-cd my-agentcore-project
-
 # uv プロジェクトを初期化
 uv init
-
-# bedrock-agentcore-starter-toolkit を追加
 uv add bedrock-agentcore-starter-toolkit
-
-# 仮想環境をアクティベート（自動的に作成されます）
-# uv は自動的に仮想環境を管理します
-```
-
-**従来の pip を使用する場合：**
-```bash
-# 仮想環境を作成
-python -m venv venv
-
-# 仮想環境をアクティベート
-# macOS/Linux:
-source venv/bin/activate
-# Windows:
-# venv\Scripts\activate
-
-# パッケージをインストール
-pip install bedrock-agentcore-starter-toolkit
 ```
 
 ### 環境変数
@@ -381,8 +518,27 @@ pip install bedrock-agentcore-starter-toolkit
 
 詳細な開発ワークフローガイダンスについては、ステアリングファイルを参照してください：
 
+### 基本ガイド
 - **完全なセットアップガイド：** `getting-started.md`
-- **Gateway 統合：** `agentcore-gateway-integration.md`  
+- **AgentCore 基礎知識：** `agentcore-fundamentals.md`
+
+### Gateway 関連
+- **Gateway 統合概要：** `agentcore-gateway-integration.md`
+- **Gateway 基本：** `agentcore-gateway-basics.md`
+- **Lambda MCP 化：** `agentcore-lambda-mcp-guide.md`
+- **OpenAPI MCP 変換：** `agentcore-openapi-mcp-guide.md`
+- **セマンティック検索：** `agentcore-semantic-search-guide.md`
+
+### デプロイメント
+- **Strands Agent デプロイ：** `strands-agentcore-deployment.md`
+- **MCP サーバーデプロイ：** `mcp-agentcore-deployment.md`
+
+### 高度な機能
+- **ストリーミング機能：** `agentcore-streaming-responses.md`
+- **セッション管理：** `agentcore-session-context-management.md`
+- **マルチモーダル処理：** `agentcore-multimodal-guide.md`
+
+### 統合
 - **Memory 統合：** `agentcore-memory-integration.md`
 
 各ステアリングファイルには以下の内容が含まれています：
@@ -390,3 +546,148 @@ pip install bedrock-agentcore-starter-toolkit
 - 完全なコード例
 - トラブルシューティングガイド
 - ベストプラクティス
+
+## よくある質問への対応
+
+### 「Bedrock AgentCore とは何か？」
+この質問には `agentcore-fundamentals.md` ステアリングファイルで包括的に回答します：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-fundamentals.md"
+})
+```
+
+### 「Gateway とは何か？どう使うのか？」
+この質問には `agentcore-gateway-basics.md` ステアリングファイルで詳細に回答します：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-gateway-basics.md"
+})
+```
+
+### 「Lambda 関数を AI エージェントのツールにするには？」
+この質問には `agentcore-lambda-mcp-guide.md` ステアリングファイルで詳細に回答します：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-lambda-mcp-guide.md"
+})
+```
+
+### 「既存の REST API を AI エージェントで使うには？」
+この質問には `agentcore-openapi-mcp-guide.md` ステアリングファイルで詳細に回答します：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-openapi-mcp-guide.md"
+})
+```
+
+### 「大量のツールから最適なものを自動選択するには？」
+この質問には `agentcore-semantic-search-guide.md` ステアリングファイルで詳細に回答します：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-semantic-search-guide.md"
+})
+```
+
+このファイルには以下の内容が含まれています：
+- AgentCore の概要と主要特徴
+- アーキテクチャとコアコンポーネント
+- メモリシステムとゲートウェイシステム
+- 開発ライフサイクルと実装パターン
+- ベストプラクティスとトラブルシューティング
+
+### 「Strands Agent を AgentCore にデプロイするには？」
+この質問には `strands-agentcore-deployment.md` ステアリングファイルで詳細に回答します：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "strands-agentcore-deployment.md"
+})
+```
+
+このファイルには以下の内容が含まれています：
+- Strands Agent フレームワークの概要
+- AgentCore Runtime との統合方法
+- 完全な実装例とコード
+- カスタムツールとメモリプロバイダーの作成
+- 監視、ログ、トラブルシューティング
+
+### 「MCP サーバーを AgentCore にデプロイするには？」
+この質問には `mcp-agentcore-deployment.md` ステアリングファイルで詳細に回答します：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "mcp-agentcore-deployment.md"
+})
+```
+
+このファイルには以下の内容が含まれています：
+- Model Context Protocol (MCP) の概要
+- MCP サーバーの実装方法
+- AgentCore Runtime との統合
+- カスタムツール、リソース、プロンプトの作成
+- エージェントとの統合パターン
+- 監視、ログ、トラブルシューティング
+
+### 「AgentCore のストリーミング機能を使うには？」
+この質問には `agentcore-streaming-responses.md` ステアリングファイルで詳細に回答します：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-streaming-responses.md"
+})
+```
+
+このファイルには以下の内容が含まれています：
+- ストリーミングレスポンスの実装方法
+- WebSocket 通信の設定と管理
+- リアルタイムデータ配信
+- ストリーミング API の活用
+- パフォーマンス最適化とベストプラクティス
+
+### 「AgentCore のセッション管理を使うには？」
+この質問には `agentcore-session-context-management.md` ステアリングファイルで詳細に回答します：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-session-context-management.md"
+})
+```
+
+このファイルには以下の内容が含まれています：
+- セッション管理の実装方法
+- ランタイムコンテキストの活用
+- 会話の継続性とメモリ管理
+- セッション状態の永続化
+- 高度なコンテキスト管理パターン
+
+### 「AgentCore のマルチモーダル処理を使うには？」
+この質問には `agentcore-multimodal-guide.md` ステアリングファイルで詳細に回答します：
+```
+kiroPowers({
+  "action": "readSteering",
+  "powerName": "aws-agentcore",
+  "steeringFile": "agentcore-multimodal-guide.md"
+})
+```
+
+このファイルには以下の内容が含まれています：
+- マルチモーダルペイロード処理の実装
+- テキスト、画像、音声データの統合処理
+- 大容量データの効率的な処理方法
+- メディアファイルの変換と最適化
+- 高度なマルチモーダル統合パターン
